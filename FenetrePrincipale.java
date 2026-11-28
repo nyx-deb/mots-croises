@@ -1,13 +1,14 @@
 import java.awt.BorderLayout;
-import java.awt.Dimension;
 import java.awt.FlowLayout;
+import java.awt.Font;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
-import javax.swing.JComponent;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.UIManager;
 
 public final class FenetrePrincipale extends JFrame {
 
@@ -19,111 +20,159 @@ public final class FenetrePrincipale extends JFrame {
     private final PanneauScore tableauScore;
 
     public FenetrePrincipale(Jeu jeu) {
-        super("Mots croisés");
+        super("Mots mêlés");
         this.jeu = jeu;
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        configurerCouleurs();
 
         grille = new PanneauGrille(jeu);
-        definitions = new PanneauDefinitions(jeu, grille);
+        definitions = new PanneauDefinitions(jeu);
         tableauScore = new PanneauScore(jeu);
-        grille.setActionVerification(this::verifierMotSelectionne);
-        grille.setActionSelection(() -> definitions.selectionnerMot(grille.getMotSelectionne()));
+        grille.setActionValidation(this::verifierSelection);
 
-        Mot premierMot = jeu.getMots().isEmpty() ? null : jeu.getMots().get(0);
-        grille.selectionnerMot(premierMot);
-        definitions.selectionnerMot(premierMot);
+        JPanel entete = new JPanel(new BorderLayout(0, 6));
+        entete.setOpaque(false);
+        JLabel titre = new JLabel("MOTS MÊLÉS");
+        titre.setFont(Apparence.TITRE);
+        titre.setForeground(Apparence.OR);
+        JLabel sousTitre = new JLabel("Trouvez les " + jeu.getMots().size()
+            + " mots cachés dans la grille en vous aidant des définitions.");
+        sousTitre.setFont(Apparence.SOUS_TITRE);
+        sousTitre.setForeground(Apparence.TEXTE_ATTENUE);
+        entete.add(titre, BorderLayout.NORTH);
+        entete.add(sousTitre, BorderLayout.SOUTH);
 
-        JPanel boutons = new JPanel(new FlowLayout(FlowLayout.CENTER, 12, 4));
-        JButton verifier = new JButton("Vérifier le mot");
-        verifier.addActionListener(e -> verifierMotSelectionne());
-        JButton verifierGrille = new JButton("Vérifier la grille");
-        verifierGrille.addActionListener(e -> verifierLaGrille());
-        JButton indice = new JButton("Indice (-" + Jeu.POINTS_INDICE + ")");
+        JPanel carteGrille = carte();
+        carteGrille.setLayout(new BorderLayout(0, 12));
+        JLabel titreGrille = new JLabel("GRILLE · glissez du premier au dernier lettre");
+        titreGrille.setFont(Apparence.PETIT.deriveFont(Font.BOLD));
+        titreGrille.setForeground(Apparence.OR);
+        carteGrille.add(titreGrille, BorderLayout.NORTH);
+        carteGrille.add(grille, BorderLayout.CENTER);
+
+        JPanel carteDefinitions = carte();
+        carteDefinitions.setLayout(new BorderLayout());
+        carteDefinitions.add(definitions, BorderLayout.CENTER);
+
+        JPanel carteScore = carte();
+        carteScore.setLayout(new BorderLayout());
+        carteScore.add(tableauScore, BorderLayout.CENTER);
+
+        JPanel colonneDroite = new JPanel(new BorderLayout(0, 18));
+        colonneDroite.setOpaque(false);
+        colonneDroite.add(carteDefinitions, BorderLayout.CENTER);
+        colonneDroite.add(carteScore, BorderLayout.SOUTH);
+
+        JPanel contenu = new JPanel(new BorderLayout(20, 0));
+        contenu.setOpaque(false);
+        contenu.add(carteGrille, BorderLayout.CENTER);
+        contenu.add(colonneDroite, BorderLayout.EAST);
+
+        JPanel boutons = new JPanel(new FlowLayout(FlowLayout.RIGHT, 12, 0));
+        boutons.setOpaque(false);
+        JButton regles = Apparence.bouton("Règles");
+        regles.addActionListener(e -> afficherRegles());
+        JButton indice = Apparence.bouton("Indice (-" + Jeu.POINTS_INDICE + ")");
         indice.addActionListener(e -> utiliserIndice());
-        JButton nouvellePartie = new JButton("Nouvelle partie");
+        JButton nouvellePartie = Apparence.bouton("Nouvelle partie");
         nouvellePartie.addActionListener(e -> nouvellePartie());
-        boutons.add(verifier);
-        boutons.add(verifierGrille);
+        boutons.add(regles);
         boutons.add(indice);
         boutons.add(nouvellePartie);
 
-        JPanel droite = new JPanel(new BorderLayout(8, 8));
-        droite.add(definitions, BorderLayout.CENTER);
-        droite.add(tableauScore, BorderLayout.SOUTH);
+        JPanel racine = new JPanel(new BorderLayout(0, 20));
+        racine.setBackground(Apparence.FOND);
+        racine.setBorder(BorderFactory.createEmptyBorder(24, 28, 24, 28));
+        racine.add(entete, BorderLayout.NORTH);
+        racine.add(contenu, BorderLayout.CENTER);
+        racine.add(boutons, BorderLayout.SOUTH);
+        setContentPane(racine);
 
-        ((JComponent) getContentPane()).setBorder(BorderFactory.createEmptyBorder(12, 12, 12, 12));
-        setLayout(new BorderLayout(12, 12));
-        add(grille, BorderLayout.CENTER);
-        add(droite, BorderLayout.EAST);
-        add(boutons, BorderLayout.SOUTH);
-        setPreferredSize(new Dimension(820, 520));
+        definitions.selectionnerMot(jeu.prochainMotATrouver());
         pack();
         setLocationRelativeTo(null);
     }
 
-    private void verifierMotSelectionne() {
-        Mot mot = grille.getMotSelectionne();
-        if (mot == null) {
-            JOptionPane.showMessageDialog(this, "Sélectionnez d'abord une définition.",
-                "Aucun mot sélectionné", JOptionPane.INFORMATION_MESSAGE);
+    private void configurerCouleurs() {
+        UIManager.put("Panel.background", Apparence.FOND);
+        UIManager.put("OptionPane.background", Apparence.SURFACE);
+        UIManager.put("OptionPane.messageForeground", Apparence.TEXTE);
+        UIManager.put("Button.background", Apparence.SURFACE_CLAIRE);
+        UIManager.put("Button.foreground", Apparence.TEXTE);
+        UIManager.put("List.background", Apparence.SURFACE);
+        UIManager.put("List.foreground", Apparence.TEXTE);
+        UIManager.put("Viewport.background", Apparence.SURFACE);
+    }
+
+    private JPanel carte() {
+        JPanel panneau = new JPanel();
+        panneau.setBackground(Apparence.SURFACE);
+        panneau.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(Apparence.BORDURE),
+            BorderFactory.createEmptyBorder(18, 18, 18, 18)));
+        return panneau;
+    }
+
+    private void verifierSelection(Position debut, Position fin) {
+        if (jeu.casesLigne(debut, fin).size() < 2) {
             return;
         }
-        if (jeu.estTrouve(mot)) {
+        Mot trouve = jeu.chercherMot(debut, fin);
+        if (trouve != null && jeu.validerMot(trouve)) {
+            actualiserAffichage();
+            definitions.selectionnerMot(jeu.prochainMotATrouver());
+            JOptionPane.showMessageDialog(this, "Trouvé : " + trouve.mot + "\n\n" + trouve.definition,
+                "Bravo !", JOptionPane.INFORMATION_MESSAGE);
+            verifierFinDePartie();
+            return;
+        }
+        if (trouve != null) {
             JOptionPane.showMessageDialog(this, "Ce mot est déjà trouvé.",
                 "Mot validé", JOptionPane.INFORMATION_MESSAGE);
             return;
         }
-        if (jeu.verifier(mot)) {
-            actualiserAffichage();
-            JOptionPane.showMessageDialog(this, "Bravo, " + mot.mot + " est correct ! +"
-                + Jeu.POINTS_PAR_MOT + " points.", "Bonne réponse", JOptionPane.INFORMATION_MESSAGE);
-            verifierFinDePartie();
-        } else {
-            actualiserAffichage();
-            JOptionPane.showMessageDialog(this, "Ce n'est pas la bonne réponse. Vérifiez les lettres.",
-                "Réponse incorrecte", JOptionPane.WARNING_MESSAGE);
-        }
-    }
-
-    private void verifierLaGrille() {
-        int ajoutes = jeu.verifierGrille();
+        jeu.appliquerMalus();
         actualiserAffichage();
-        if (ajoutes > 0) {
-            JOptionPane.showMessageDialog(this, ajoutes + " mot(s) validé(s).",
-                "Grille vérifiée", JOptionPane.INFORMATION_MESSAGE);
-            verifierFinDePartie();
-        } else {
-            JOptionPane.showMessageDialog(this, "Aucun nouveau mot complet à valider.",
-                "Grille vérifiée", JOptionPane.INFORMATION_MESSAGE);
-        }
+        JOptionPane.showMessageDialog(this, "Aucun mot ne correspond à cette ligne.",
+            "Essayez encore", JOptionPane.WARNING_MESSAGE);
     }
 
     private void utiliserIndice() {
-        Mot mot = grille.getMotSelectionne();
+        Mot mot = definitions.getMotSelectionne();
         if (mot == null) {
-            JOptionPane.showMessageDialog(this, "Sélectionnez d'abord une définition.",
-                "Aucun mot sélectionné", JOptionPane.INFORMATION_MESSAGE);
-            return;
+            mot = jeu.prochainMotATrouver();
         }
         Position position = jeu.donnerIndice(mot);
         actualiserAffichage();
         if (position == null) {
-            JOptionPane.showMessageDialog(this, "Aucune lettre à révéler pour ce mot.",
+            JOptionPane.showMessageDialog(this, "Tous les mots ont déjà été trouvés.",
                 "Indice", JOptionPane.INFORMATION_MESSAGE);
             return;
         }
-        JOptionPane.showMessageDialog(this, "Lettre révélée en ligne " + (position.getLigne() + 1)
+        grille.afficherIndice(position);
+        JOptionPane.showMessageDialog(this, "Le mot commence à la ligne " + (position.getLigne() + 1)
             + ", colonne " + (position.getColonne() + 1) + " (-" + Jeu.POINTS_INDICE + " points).",
             "Indice", JOptionPane.INFORMATION_MESSAGE);
     }
 
     private void nouvellePartie() {
         jeu.reinitialiser();
+        grille.reinitialiser();
         definitions.reinitialiser();
-        Mot premierMot = jeu.getMots().isEmpty() ? null : jeu.getMots().get(0);
-        grille.selectionnerMot(premierMot);
-        definitions.selectionnerMot(premierMot);
+        definitions.selectionnerMot(jeu.prochainMotATrouver());
         actualiserAffichage();
+    }
+
+    private void afficherRegles() {
+        String regles = "<html><div style='width:360px;color:#E2E8F0;font-size:13px;'>"
+            + "<b>Comment jouer ?</b><br><br>"
+            + "1. Lisez une définition dans la colonne de droite.<br>"
+            + "2. Dans la grille, glissez du premier au dernier lettre du mot.<br>"
+            + "3. Les mots peuvent être horizontaux, verticaux ou obliques, et lus dans les deux sens.<br><br>"
+            + "Un mot trouvé rapporte " + Jeu.POINTS_PAR_MOT + " points. Un indice en coûte "
+            + Jeu.POINTS_INDICE + ", une erreur " + Jeu.PENALITE_ERREUR + ".<br><br>"
+            + "Les lettres qui ne forment pas un mot sont là pour vous égarer.</div></html>";
+        JOptionPane.showMessageDialog(this, regles, "Règles du jeu", JOptionPane.INFORMATION_MESSAGE);
     }
 
     private void verifierFinDePartie() {
@@ -139,7 +188,7 @@ public final class FenetrePrincipale extends JFrame {
     }
 
     private void actualiserAffichage() {
-        grille.actualiser();
+        grille.repaint();
         definitions.actualiser();
         tableauScore.actualiser();
     }

@@ -1,5 +1,18 @@
 # Changelog
 
+## [Non publié] - 2026-11-28 (refonte mots mêlés)
+
+### Ajouts
+- `Apparence.java` : palette sombre, typographie et boutons partagés par l'interface.
+- `PanneauGrille.java` : grille peinte sur mesure avec sélection par glisser-déposer, survol, surlignage des mots trouvés et indice en pointillés.
+
+### Modifications
+- `Jeu.java` : passage d'une saisie de lettres à une recherche de mots dans la grille remplie ; validation d'une ligne dans les deux sens, score, indices et progression adaptés.
+- `FenetrePrincipale.java` : nouvelle disposition sombre, boutons « Règles », « Indice » et « Nouvelle partie ».
+- `PanneauDefinitions.java` : liste restylée, définitions sans révélation du mot tant qu'il n'est pas trouvé.
+- `PanneauScore.java` : score mis en avant et barre de progression dessinée sur mesure.
+- `README.md` : règles, commandes et description du nouveau gameplay.
+
 ## [Non publié] - 2026-11-28
 
 ### Ajouts

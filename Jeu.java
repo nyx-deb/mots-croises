@@ -14,7 +14,6 @@ public class Jeu {
     private Terrain terrain;
     private final List<Mot> mots = new ArrayList<>();
     private final Set<Mot> motsTrouves = new HashSet<>();
-    private final char[][] saisie = new char[TAILLE][TAILLE];
     private int score;
     private int indicesUtilises;
 
@@ -28,11 +27,6 @@ public class Jeu {
         motsTrouves.clear();
         score = 0;
         indicesUtilises = 0;
-        for (int ligne = 0; ligne < TAILLE; ligne++) {
-            for (int colonne = 0; colonne < TAILLE; colonne++) {
-                saisie[ligne][colonne] = ' ';
-            }
-        }
 
         Mot[] candidats = {
             new Mot("JEU", "horizontal", new Position(0, 1), "Activité ludique"),
@@ -85,31 +79,8 @@ public class Jeu {
         return motsTrouves.contains(mot);
     }
 
-    public char getSaisie(int ligne, int colonne) {
-        if (!estDansGrille(ligne, colonne)) {
-            return ' ';
-        }
-        return saisie[ligne][colonne];
-    }
-
-    public char getSolution(int ligne, int colonne) {
-        if (!estDansGrille(ligne, colonne)) {
-            return ' ';
-        }
+    public char getLettre(int ligne, int colonne) {
         return terrain.solution[ligne][colonne];
-    }
-
-    public void saisirLettre(int ligne, int colonne, char lettre) {
-        if (!estDansGrille(ligne, colonne) || !Character.isLetter(lettre)) {
-            return;
-        }
-        saisie[ligne][colonne] = Character.toUpperCase(lettre);
-    }
-
-    public void effacerLettre(int ligne, int colonne) {
-        if (estDansGrille(ligne, colonne)) {
-            saisie[ligne][colonne] = ' ';
-        }
     }
 
     public Position positionLettre(Mot mot, int index) {
@@ -126,128 +97,121 @@ public class Jeu {
         return new Position(ligne, colonne);
     }
 
-    public boolean contient(Mot mot, int ligne, int colonne) {
-        if (mot == null) {
-            return false;
+    public List<Position> casesLigne(Position debut, Position fin) {
+        List<Position> cases = new ArrayList<>();
+        if (debut == null || fin == null) {
+            return cases;
         }
-        for (int k = 0; k < mot.mot.length(); k++) {
-            Position position = positionLettre(mot, k);
-            if (position.getLigne() == ligne && position.getColonne() == colonne) {
-                return true;
-            }
+        int deltaLigne = fin.getLigne() - debut.getLigne();
+        int deltaColonne = fin.getColonne() - debut.getColonne();
+        int pasLigne = 0;
+        int pasColonne = 0;
+        int etapes;
+        if (deltaLigne == 0 && deltaColonne == 0) {
+            cases.add(new Position(debut.getLigne(), debut.getColonne()));
+            return cases;
         }
-        return false;
+        if (deltaLigne == 0) {
+            pasColonne = Integer.signum(deltaColonne);
+            etapes = Math.abs(deltaColonne);
+        } else if (deltaColonne == 0) {
+            pasLigne = Integer.signum(deltaLigne);
+            etapes = Math.abs(deltaLigne);
+        } else if (Math.abs(deltaLigne) == Math.abs(deltaColonne)) {
+            pasLigne = Integer.signum(deltaLigne);
+            pasColonne = Integer.signum(deltaColonne);
+            etapes = Math.abs(deltaLigne);
+        } else if (Math.abs(deltaLigne) > Math.abs(deltaColonne)) {
+            pasLigne = Integer.signum(deltaLigne);
+            etapes = Math.abs(deltaLigne);
+        } else {
+            pasColonne = Integer.signum(deltaColonne);
+            etapes = Math.abs(deltaColonne);
+        }
+        for (int k = 0; k <= etapes; k++) {
+            cases.add(new Position(debut.getLigne() + k * pasLigne, debut.getColonne() + k * pasColonne));
+        }
+        return cases;
     }
 
     public boolean estCaseMotTrouve(int ligne, int colonne) {
         for (Mot mot : motsTrouves) {
-            if (contient(mot, ligne, colonne)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    public Mot motA(int ligne, int colonne) {
-        List<Mot> presents = motsA(ligne, colonne);
-        return presents.isEmpty() ? null : presents.get(0);
-    }
-
-    public List<Mot> motsA(int ligne, int colonne) {
-        List<Mot> presents = new ArrayList<>();
-        for (Mot mot : mots) {
-            if (contient(mot, ligne, colonne) && !motsTrouves.contains(mot)) {
-                presents.add(mot);
-            }
-        }
-        if (presents.isEmpty()) {
-            for (Mot mot : mots) {
-                if (contient(mot, ligne, colonne)) {
-                    presents.add(mot);
+            for (int k = 0; k < mot.mot.length(); k++) {
+                Position position = positionLettre(mot, k);
+                if (position.getLigne() == ligne && position.getColonne() == colonne) {
+                    return true;
                 }
             }
         }
-        return presents;
-    }
-
-    public Position caseSuivante(Mot mot, int ligne, int colonne) {
-        return caseVoisine(mot, ligne, colonne, 1);
-    }
-
-    public Position casePrecedente(Mot mot, int ligne, int colonne) {
-        return caseVoisine(mot, ligne, colonne, -1);
-    }
-
-    public boolean verifier(Mot mot) {
-        if (mot == null || motsTrouves.contains(mot)) {
-            return false;
-        }
-        if (estCorrect(mot)) {
-            motsTrouves.add(mot);
-            score += POINTS_PAR_MOT;
-            return true;
-        }
-        score = Math.max(0, score - PENALITE_ERREUR);
         return false;
     }
 
-    public int verifierGrille() {
-        int ajoutes = 0;
+    public Mot chercherMot(Position debut, Position fin) {
+        List<Position> selection = casesLigne(debut, fin);
         for (Mot mot : mots) {
-            if (!motsTrouves.contains(mot) && estCorrect(mot)) {
-                motsTrouves.add(mot);
-                score += POINTS_PAR_MOT;
-                ajoutes++;
+            if (motsTrouves.contains(mot)) {
+                continue;
+            }
+            List<Position> cibles = new ArrayList<>();
+            for (int k = 0; k < mot.mot.length(); k++) {
+                cibles.add(positionLettre(mot, k));
+            }
+            if (cibles.size() != selection.size()) {
+                continue;
+            }
+            boolean correspond = true;
+            for (Position cible : cibles) {
+                boolean present = false;
+                for (Position caseSelectionnee : selection) {
+                    if (memePosition(cible, caseSelectionnee)) {
+                        present = true;
+                        break;
+                    }
+                }
+                if (!present) {
+                    correspond = false;
+                    break;
+                }
+            }
+            if (correspond) {
+                return mot;
             }
         }
-        return ajoutes;
+        return null;
+    }
+
+    public boolean validerMot(Mot mot) {
+        if (mot == null || motsTrouves.contains(mot)) {
+            return false;
+        }
+        motsTrouves.add(mot);
+        score += POINTS_PAR_MOT;
+        return true;
+    }
+
+    public void appliquerMalus() {
+        score = Math.max(0, score - PENALITE_ERREUR);
+    }
+
+    public Mot prochainMotATrouver() {
+        for (Mot mot : mots) {
+            if (!motsTrouves.contains(mot)) {
+                return mot;
+            }
+        }
+        return null;
     }
 
     public Position donnerIndice(Mot mot) {
         if (mot == null || motsTrouves.contains(mot)) {
             return null;
         }
-        for (int k = 0; k < mot.mot.length(); k++) {
-            Position position = positionLettre(mot, k);
-            int ligne = position.getLigne();
-            int colonne = position.getColonne();
-            if (saisie[ligne][colonne] != mot.mot.charAt(k)) {
-                saisie[ligne][colonne] = mot.mot.charAt(k);
-                indicesUtilises++;
-                score = Math.max(0, score - POINTS_INDICE);
-                return position;
-            }
-        }
-        return null;
+        indicesUtilises++;
+        score = Math.max(0, score - POINTS_INDICE);
+        return positionLettre(mot, 0);
     }
 
-    private boolean estCorrect(Mot mot) {
-        for (int k = 0; k < mot.mot.length(); k++) {
-            Position position = positionLettre(mot, k);
-            if (saisie[position.getLigne()][position.getColonne()] != mot.mot.charAt(k)) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    private Position caseVoisine(Mot mot, int ligne, int colonne, int sens) {
-        if (mot == null) {
-            return null;
-        }
-        for (int k = 0; k < mot.mot.length(); k++) {
-            Position position = positionLettre(mot, k);
-            if (position.getLigne() == ligne && position.getColonne() == colonne) {
-                int voisin = k + sens;
-                if (voisin >= 0 && voisin < mot.mot.length()) {
-                    return positionLettre(mot, voisin);
-                }
-            }
-        }
-        return null;
-    }
-
-    private boolean estDansGrille(int ligne, int colonne) {
-        return ligne >= 0 && ligne < TAILLE && colonne >= 0 && colonne < TAILLE;
+    private boolean memePosition(Position premiere, Position seconde) {
+        return premiere.getLigne() == seconde.getLigne() && premiere.getColonne() == seconde.getColonne();
     }
 }
