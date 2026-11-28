@@ -6,6 +6,7 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.List;
 
 import javax.swing.BorderFactory;
 import javax.swing.JLabel;
@@ -30,6 +31,8 @@ public final class PanneauGrille extends JPanel {
     private transient Mot motSelectionne;
     private transient Runnable actionVerification;
     private transient Runnable actionSelection;
+    private int derniereLigne = -1;
+    private int derniereColonne = -1;
 
     public PanneauGrille(Jeu jeu) {
         this.jeu = jeu;
@@ -76,9 +79,11 @@ public final class PanneauGrille extends JPanel {
                 caseGrille.addMouseListener(new MouseAdapter() {
                     @Override
                     public void mousePressed(MouseEvent evenement) {
-                        Mot mot = jeu.motA(l, c);
-                        if (mot != null) {
-                            selectionnerMot(mot);
+                        List<Mot> presents = jeu.motsA(l, c);
+                        if (!presents.isEmpty()) {
+                            selectionnerMot(motSuivant(presents, l, c));
+                            derniereLigne = l;
+                            derniereColonne = c;
                         }
                         if (actionSelection != null) {
                             actionSelection.run();
@@ -91,7 +96,7 @@ public final class PanneauGrille extends JPanel {
             }
         }
         add(grille, BorderLayout.CENTER);
-        add(new JLabel("Saisissez une lettre, Entrée pour vérifier, Retour arrière pour effacer."), BorderLayout.SOUTH);
+        add(new JLabel("Clic sur une case pour choisir un mot, clics répétés sur un croisement pour changer. Entrée : vérifier."), BorderLayout.SOUTH);
         actualiser();
     }
 
@@ -109,6 +114,8 @@ public final class PanneauGrille extends JPanel {
 
     public void selectionnerMot(Mot mot) {
         motSelectionne = mot;
+        derniereLigne = -1;
+        derniereColonne = -1;
         actualiser();
         if (mot == null) {
             return;
@@ -135,6 +142,18 @@ public final class PanneauGrille extends JPanel {
                 setBordure(caseGrille, selectionne && !trouve);
             }
         }
+    }
+
+    private Mot motSuivant(List<Mot> presents, int ligne, int colonne) {
+        if (ligne != derniereLigne || colonne != derniereColonne) {
+            return presents.get(0);
+        }
+        for (int i = 0; i < presents.size(); i++) {
+            if (presents.get(i) == motSelectionne) {
+                return presents.get((i + 1) % presents.size());
+            }
+        }
+        return presents.get(0);
     }
 
     private void avancer(int ligne, int colonne, int sens) {

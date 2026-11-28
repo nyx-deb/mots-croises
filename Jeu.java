@@ -149,17 +149,25 @@ public class Jeu {
     }
 
     public Mot motA(int ligne, int colonne) {
+        List<Mot> presents = motsA(ligne, colonne);
+        return presents.isEmpty() ? null : presents.get(0);
+    }
+
+    public List<Mot> motsA(int ligne, int colonne) {
+        List<Mot> presents = new ArrayList<>();
         for (Mot mot : mots) {
-            if (!motsTrouves.contains(mot) && contient(mot, ligne, colonne)) {
-                return mot;
+            if (contient(mot, ligne, colonne) && !motsTrouves.contains(mot)) {
+                presents.add(mot);
             }
         }
-        for (Mot mot : mots) {
-            if (contient(mot, ligne, colonne)) {
-                return mot;
+        if (presents.isEmpty()) {
+            for (Mot mot : mots) {
+                if (contient(mot, ligne, colonne)) {
+                    presents.add(mot);
+                }
             }
         }
-        return null;
+        return presents;
     }
 
     public Position caseSuivante(Mot mot, int ligne, int colonne) {
