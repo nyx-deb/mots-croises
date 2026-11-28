@@ -1,5 +1,4 @@
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.Font;
 
@@ -25,14 +24,8 @@ public final class PanneauDefinitions extends JPanel {
 
     public PanneauDefinitions(Jeu jeu) {
         this.jeu = jeu;
-        setLayout(new BorderLayout(0, 12));
-        setBackground(Apparence.SURFACE);
-        setOpaque(true);
-
-        JLabel titre = new JLabel("DÉFINITIONS");
-        titre.setFont(Apparence.PETIT.deriveFont(Font.BOLD));
-        titre.setForeground(Apparence.OR);
-        add(titre, BorderLayout.NORTH);
+        setLayout(new BorderLayout(0, 14));
+        setBackground(Apparence.FOND);
 
         remplirModele();
         liste = new JList<>(modele);
@@ -48,17 +41,13 @@ public final class PanneauDefinitions extends JPanel {
             afficherDetail();
         });
         JScrollPane defilement = new JScrollPane(liste);
-        defilement.setBackground(Apparence.SURFACE);
-        defilement.getViewport().setBackground(Apparence.SURFACE);
         defilement.setBorder(BorderFactory.createLineBorder(Apparence.BORDURE));
+        defilement.getViewport().setBackground(Apparence.SURFACE);
         add(defilement, BorderLayout.CENTER);
 
         detail = new JLabel();
         detail.setFont(Apparence.PETIT);
-        detail.setForeground(Apparence.TEXTE_ATTENUE);
-        detail.setBorder(BorderFactory.createEmptyBorder(10, 12, 10, 12));
-        detail.setOpaque(true);
-        detail.setBackground(Apparence.SURFACE_CLAIRE);
+        detail.setForeground(Apparence.ATTENUE);
         add(detail, BorderLayout.SOUTH);
         afficherDetail();
     }
@@ -98,19 +87,13 @@ public final class PanneauDefinitions extends JPanel {
 
     private void afficherDetail() {
         if (motSelectionne == null) {
-            detail.setText("Sélectionnez une définition, puis glissez sur la grille du début à la fin du mot.");
+            detail.setText("Sélectionnez une définition.");
             return;
         }
-        String sens = "horizontal".equals(motSelectionne.direction) ? "horizontale"
-            : "vertical".equals(motSelectionne.direction) ? "verticale" : "oblique montante";
-        String etat = jeu.estTrouve(motSelectionne) ? "Mot déjà trouvé : " + motSelectionne.mot : "Mot à trouver";
-        detail.setText("<html><div style='width:230px;'><b>" + etat + "</b><br>"
-            + motSelectionne.definition + "<br><span style='color:" + hex(Apparence.OR)
-            + "'>" + sens + " · " + motSelectionne.mot.length() + " lettres</span></div></html>");
-    }
-
-    private static String hex(Color couleur) {
-        return String.format("#%06X", couleur.getRGB() & 0xFFFFFF);
+        String sens = "horizontal".equals(motSelectionne.direction) ? "horizontal"
+            : "vertical".equals(motSelectionne.direction) ? "vertical" : "oblique";
+        String etat = jeu.estTrouve(motSelectionne) ? "trouvé" : "à trouver";
+        detail.setText(motSelectionne.mot.length() + " lettres · " + sens + " · " + etat);
     }
 
     private final class MotRenderer extends DefaultListCellRenderer {
@@ -122,20 +105,16 @@ public final class PanneauDefinitions extends JPanel {
                 boolean selectionne, boolean focus) {
             super.getListCellRendererComponent(liste, valeur, index, selectionne, focus);
             setOpaque(true);
-            setBorder(BorderFactory.createEmptyBorder(10, 12, 10, 12));
-            setBackground(selectionne ? Apparence.OR : Apparence.SURFACE_CLAIRE);
+            setBorder(BorderFactory.createEmptyBorder(9, 12, 9, 12));
+            setFont(Apparence.CORPS);
+            setBackground(selectionne ? Apparence.ACCENT_LEGER : Apparence.SURFACE);
+            setForeground(selectionne || jeu.estTrouve((Mot) valeur)
+                ? Apparence.ACCENT : Apparence.TEXTE);
             if (valeur instanceof Mot mot) {
                 String sens = "horizontal".equals(mot.direction) ? "H"
                     : "vertical".equals(mot.direction) ? "V" : "O";
-                String couleurMeta = selectionne ? hex(Apparence.FOND) : hex(Apparence.OR);
-                String couleurTexte = selectionne ? hex(Apparence.FOND)
-                    : jeu.estTrouve(mot) ? hex(Apparence.SUCCES) : hex(Apparence.TEXTE);
-                String libelle = jeu.estTrouve(mot) ? "Trouvé : " + mot.mot + "<br>" + mot.definition
-                    : mot.definition;
-                setText("<html><div style='width:230px;'><span style='color:" + couleurMeta
-                    + ";font-size:11px;font-weight:bold'>" + String.format("%02d", index + 1)
-                    + " · " + sens + " · " + mot.mot.length() + " lettres</span><br><span style='color:"
-                    + couleurTexte + ";font-size:13px'>" + libelle + "</span></div></html>");
+                String marque = jeu.estTrouve(mot) ? "· " : "";
+                setText(String.format("%02d  %s  %-24s", index + 1, sens, marque + mot.definition));
             }
             return this;
         }
