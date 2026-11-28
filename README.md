@@ -1,19 +1,24 @@
 <div align="center">
 
-<pre>
-M   M  OOO  TTTTT  SSSS       M   M EEEEE L     EEEEE  SSSS
-MM MM O   O   T   S           MM MM E     L     E     S
-M M M O   O   T    SSS        M M M EEEE  L     EEEE   SSS
-M   M O   O   T       S       M   M E     L     E         S
-M   M  OOO    T   SSSS        M   M EEEEE LLLLL EEEEE SSSS
-</pre>
+<h1>MOTS MÊLÉS</h1>
 
 [![Java 21](https://img.shields.io/badge/Java-21-e25a5a?style=flat-square)](https://openjdk.org/projects/jdk/21/)
 [![Interface](https://img.shields.io/badge/UI-Swing-303033?style=flat-square)](https://docs.oracle.com/javase/tutorial/uiswing/)
 [![Grille](https://img.shields.io/badge/grille-10x10-e25a5a?style=flat-square)](#jouer)
+[![Mots](https://img.shields.io/badge/mots-10-e25a5a?style=flat-square)](#jouer)
+[![Directions](https://img.shields.io/badge/directions-4-303033?style=flat-square)](#jouer)
+[![Contrôles](https://img.shields.io/badge/controles-glisser--d%C3%A9poser-303033?style=flat-square)](#jouer)
+[![Thème](https://img.shields.io/badge/theme-sombre_%2B_rouge-303033?style=flat-square)](#aperçu)
+[![Dépendances](https://img.shields.io/badge/dependencies-none-303033?style=flat-square)](#lancer-le-jeu)
+[![Compilation](https://img.shields.io/badge/build-javac%20-Xlint%3Aall-e25a5a?style=flat-square)](#lancer-le-jeu)
+
 [![Dernier commit](https://img.shields.io/github/last-commit/nyx-deb/mots-meles?style=flat-square&color=e25a5a)](https://github.com/nyx-deb/mots-meles/commits/master)
 [![Activité](https://img.shields.io/github/commit-activity/m/nyx-deb/mots-meles?style=flat-square&color=303033)](https://github.com/nyx-deb/mots-meles/graphs/commit-activity)
+[![Issues](https://img.shields.io/github/issues/nyx-deb/mots-meles?style=flat-square&color=303033)](https://github.com/nyx-deb/mots-meles/issues)
+[![Pull requests](https://img.shields.io/github/issues-pr/nyx-deb/mots-meles?style=flat-square&color=303033)](https://github.com/nyx-deb/mots-meles/pulls)
+[![Code](https://img.shields.io/github/languages/code-size/nyx-deb/mots-meles?style=flat-square&color=e25a5a)](https://github.com/nyx-deb/mots-meles)
 [![Taille](https://img.shields.io/github/repo-size/nyx-deb/mots-meles?style=flat-square&color=303033)](https://github.com/nyx-deb/mots-meles)
+[![État](https://img.shields.io/badge/status-active-e25a5a?style=flat-square)](#ce-qui-est-en-place)
 
 **Un jeu de mots mêlés en Java Swing. Une grille 10x10, dix mots à repérer, un score en direct.**
 
