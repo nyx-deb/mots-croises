@@ -19,14 +19,12 @@ public final class PanneauGrille extends JPanel {
 
     private static final long serialVersionUID = 1L;
 
-    public static final int TAILLE_CASE = 62;
-    public static final int ESPACEMENT = 8;
-    public static final int MARGE = 14;
+    public static final int TAILLE_CASE = 58;
+    public static final int ESPACEMENT = 6;
+    public static final int MARGE = 8;
 
-    private static final int RAYON = 10;
-    private static final Color FONDE_TROUVE = new Color(17, 80, 71);
-    private static final Color SELECTION = new Color(227, 179, 65, 75);
-    private static final Color SURVOL = new Color(148, 163, 184, 40);
+    private static final int RAYON = 6;
+    private static final Color SURVOL = new Color(35, 35, 38);
 
     private final transient Jeu jeu;
     private transient Position debut;
@@ -37,7 +35,7 @@ public final class PanneauGrille extends JPanel {
 
     public PanneauGrille(Jeu jeu) {
         this.jeu = jeu;
-        setBackground(Apparence.SURFACE);
+        setBackground(Apparence.FOND);
         int cote = 2 * MARGE + Jeu.TAILLE * TAILLE_CASE + (Jeu.TAILLE - 1) * ESPACEMENT;
         setPreferredSize(new Dimension(cote, cote));
 
@@ -89,11 +87,12 @@ public final class PanneauGrille extends JPanel {
             @Override
             public void mouseMoved(MouseEvent evenement) {
                 Position caseChoisie = caseSousSouris(evenement);
-                if (caseChoisie != survol && (caseChoisie == null || survol == null
-                    || !memePosition(caseChoisie, survol))) {
-                    survol = caseChoisie;
-                    repaint();
+                if (caseChoisie == survol || caseChoisie != null && survol != null
+                    && memePosition(caseChoisie, survol)) {
+                    return;
                 }
+                survol = caseChoisie;
+                repaint();
             }
         });
     }
@@ -124,8 +123,8 @@ public final class PanneauGrille extends JPanel {
         super.paintComponent(graphique);
         Graphics2D g = (Graphics2D) graphique.create();
         g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-
         List<Position> selection = getSelection();
+
         for (int ligne = 0; ligne < Jeu.TAILLE; ligne++) {
             for (int colonne = 0; colonne < Jeu.TAILLE; colonne++) {
                 Position position = new Position(ligne, colonne);
@@ -136,38 +135,24 @@ public final class PanneauGrille extends JPanel {
                 boolean survolCase = survol != null && memePosition(survol, position);
                 boolean indiceCase = indice != null && memePosition(indice, position);
 
-                Color fond = Apparence.SURFACE_CLAIRE;
-                if (trouve) {
-                    fond = FONDE_TROUVE;
-                }
-                if (survolCase && !dansSelection) {
-                    fond = SURVOL;
-                }
-                if (dansSelection) {
-                    fond = SELECTION;
-                }
-                g.setColor(fond);
+                g.setColor(dansSelection || trouve ? Apparence.ACCENT_LEGER
+                    : survolCase ? SURVOL : Apparence.SURFACE);
                 g.fill(new RoundRectangle2D.Float(x, y, TAILLE_CASE, TAILLE_CASE, RAYON, RAYON));
 
-                g.setColor(dansSelection || indiceCase ? Apparence.OR : Apparence.BORDURE);
-                if (indiceCase) {
-                    g.setStroke(new BasicStroke(2f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER,
-                        10f, new float[] {6f, 4f}, 0f));
-                } else {
-                    g.setStroke(dansSelection
-                        ? new BasicStroke(2f)
-                        : new BasicStroke(1f));
-                }
-                g.draw(new RoundRectangle2D.Float(x + 0.5f, y + 0.5f, TAILLE_CASE - 1, TAILLE_CASE - 1,
-                    RAYON, RAYON));
+                g.setColor(dansSelection || indiceCase || trouve ? Apparence.ACCENT : Apparence.BORDURE);
+                g.setStroke(indiceCase
+                    ? new BasicStroke(1.5f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER,
+                        8f, new float[] {4f, 3f}, 0f)
+                    : dansSelection ? new BasicStroke(1.5f) : new BasicStroke(1f));
+                g.draw(new RoundRectangle2D.Float(x + 0.5f, y + 0.5f, TAILLE_CASE - 1,
+                    TAILLE_CASE - 1, RAYON, RAYON));
 
                 String lettre = String.valueOf(jeu.getLettre(ligne, colonne));
-                g.setColor(dansSelection ? Apparence.OR : trouve ? Apparence.SUCCES : Apparence.TEXTE);
+                g.setColor(dansSelection || trouve ? Apparence.ACCENT : Apparence.TEXTE);
                 g.setFont(Apparence.LETTRE);
                 FontMetrics mesures = g.getFontMetrics();
-                int xTexte = x + (TAILLE_CASE - mesures.stringWidth(lettre)) / 2;
-                int yTexte = y + (TAILLE_CASE - mesures.getHeight()) / 2 + mesures.getAscent();
-                g.drawString(lettre, xTexte, yTexte);
+                g.drawString(lettre, x + (TAILLE_CASE - mesures.stringWidth(lettre)) / 2,
+                    y + (TAILLE_CASE - mesures.getHeight()) / 2 + mesures.getAscent());
                 g.setStroke(new BasicStroke());
             }
         }

@@ -1,24 +1,27 @@
-# Mots mêlés
+```text
+M   M  OOO  TTTTT  SSSS       M   M EEEEE L     EEEEE  SSSS
+MM MM O   O   T   S           MM MM E     L     E     S
+M M M O   O   T    SSS        M M M EEEE  L     EEEE   SSS
+M   M O   O   T       S       M   M E     L     E         S
+M   M  OOO    T   SSSS        M   M EEEEE LLLLL EEEEE SSSS
+```
 
-Jeu de mots mêlés en Java Swing : une grille 5x5 remplie de lettres, des définitions à consulter et des mots à retrouver en glissant d'une lettre à l'autre.
+![Java](https://img.shields.io/badge/Java-21-e25a5a?style=flat-square)
+![Interface](https://img.shields.io/badge/UI-Swing-303033?style=flat-square)
+![Dépendances](https://img.shields.io/badge/dependencies-none-303033?style=flat-square)
 
-## Présentation
+Jeu de mots mêlés en Java Swing. Une grille 5x5 remplie de lettres, cinq définitions, et des mots à retrouver en glissant d'une lettre à l'autre.
 
-Le projet garde la séparation en deux parties définie dans le document de répartition :
+## Sommaire
 
-- **Grille et modèle** : `Position.java`, `Mot.java`, `Terrain.java`. Ils gèrent les coordonnées, les mots, leur placement et le contrôle des croisements.
-- **Jeu et interface** : `Jeu.java`, `Main.java`, `FenetrePrincipale.java`, `PanneauGrille.java`, `PanneauDefinitions.java`, `PanneauScore.java`, `Apparence.java`. Ils gèrent la partie, la recherche des mots, les indices, le score et l'affichage Swing.
+- [Lancer le jeu](#lancer-le-jeu)
+- [Jouer](#jouer)
+- [Structure](#structure)
+- [Contribution](#contribution)
 
-La logique métier reste dans le modèle ; les classes Swing ne font qu'afficher la grille et transmettre les actions du joueur.
+## Lancer le jeu
 
-## Prérequis
-
-- JDK 21 ou supérieur (Swing est inclus dans le JDK).
-- Aucun gestionnaire de dépendances ni serveur d'application n'est nécessaire.
-
-## Compilation et lancement
-
-Depuis la racine du dépôt :
+JDK 21 ou supérieur, sans dépendance externe.
 
 ```bash
 mkdir -p build
@@ -26,52 +29,56 @@ javac -d build *.java
 java -cp build Main
 ```
 
-Vous pouvez aussi ouvrir le projet dans un IDE Java et lancer la classe `Main`, qui contient le point d'entrée `main`.
+<details>
+<summary>Voir avec un IDE</summary>
 
-## Règles du jeu
+Ouvrir le dossier dans un IDE Java, puis lancer la classe `Main` qui contient le point d'entrée `main`.
 
-- La grille affiche toutes les lettres : celles des mots cachés et des lettres aléatoires qui servent à égarer le joueur.
-- Cinq mots sont dissimulés dans la grille, en horizontal, en vertical ou en oblique montant.
-- Pour valider un mot, glissez le curseur depuis sa première lettre jusqu'à sa dernière lettre. Les mots sont acceptés dans les deux sens de lecture.
-- Les définitions sont listées à droite. Un mot trouvé passe au vert dans la liste et dans la grille, et la sélection passe automatiquement au mot suivant non trouvé.
-- Un mot correct rapporte **10 points**. Une sélection qui ne correspond à aucun mot coûte **2 points**. Le score ne peut pas devenir négatif.
-- Le bouton **Indice (-5)** révèle, avec un contour doré, la case de départ du mot sélectionné.
-- La partie se termine lorsque tous les mots ont été trouvés ; une fenêtre propose alors de rejouer.
+</details>
 
-## Commandes utiles
+## Jouer
+
+Glissez sur la grille du premier au dernier lettre d'un mot. Les mots se lisent en horizontal, en vertical ou en oblique, dans les deux sens. Les lettres qui ne composent pas un mot sont là pour égarer.
+
+Un mot trouvé rapporte 10 points, une ligne sans mot en coûte 2, et un indice en coûte 5 en révélant la case de départ du mot sélectionné.
+
+<details>
+<summary>Commandes et interface</summary>
 
 | Action | Méthode |
 | --- | --- |
-| Choisir la définition ciblée | Clic sur une définition |
-| Sélectionner un mot | Glisser d'une lettre à l'autre dans la grille |
-| Obtenir un indice | Bouton « Indice (-5) » |
-| Consulter les règles | Bouton « Règles » |
+| Choisir une définition | Clic dans la liste de droite |
+| Sélectionner un mot | Glisser d'une lettre à l'autre |
+| Indice | Bouton « Indice », -5 points |
 | Recommencer | Bouton « Nouvelle partie » |
 
-## Interface
+L'interface est sombre, avec un seul accent rouge : sélection, lettres trouvées et score. Les mots validés passent dans la même teinte dans la grille et dans la liste.
 
-L'interface utilise un thème sombre : fond ardoise, surfaces légèrement plus claires, accent doré et vert pour les mots trouvés. La typographie `DejaVu Sans` (et `DejaVu Sans Mono` pour les lettres de la grille) garde une hiérarchie lisible, avec des contrastes conformes à WCAG AA. Chaque état est visible : survol des cases, sélection en cours, mot trouvé, indice en pointillés et boutons au survol.
+</details>
 
-## Structure des fichiers
+<details>
+<summary>À propos du modèle</summary>
+
+`Position`, `Mot` et `Terrain` construisent la grille et placent les mots. `Jeu` recherche les mots sélectionnés, tient le score et la progression. Les classes Swing se limitent à l'affichage et aux événements.
+
+</details>
+
+## Structure
 
 | Fichier | Rôle |
 | --- | --- |
-| `Main.java` | Point d'entrée, lance la fenêtre Swing. |
-| `Jeu.java` | État de la partie, recherche des mots, validation, indices, score, progression et fin de partie. |
-| `Terrain.java` | Grille 5x5, placement des mots et contrôle des limites et croisements. |
-| `Mot.java` | Mot, définition, direction et position de départ. |
-| `Position.java` | Coordonnées ligne/colonne et accesseurs. |
-| `FenetrePrincipale.java` | Fenêtre principale, disposition et boutons d'action. |
-| `PanneauGrille.java` | Grille interactive, peinture des cases et sélection par glisser-déposer. |
-| `PanneauDefinitions.java` | Liste des définitions et détails du mot choisi. |
-| `PanneauScore.java` | Score, progression et nombre d'indices. |
-| `Apparence.java` | Palette, typographie et boutons communs à l'interface. |
-| `CHANGELOG.md` | Historique des changements. |
+| `Main.java` | Point d'entrée |
+| `Jeu.java` | Recherche, validation, score, progression |
+| `Terrain.java` | Grille et placement des mots |
+| `Mot.java` | Mot, définition, direction, départ |
+| `Position.java` | Coordonnées |
+| `FenetrePrincipale.java` | Fenêtre et disposition |
+| `PanneauGrille.java` | Grille et sélection au glisser |
+| `PanneauDefinitions.java` | Liste des définitions |
+| `PanneauScore.java` | Score et progression |
+| `Apparence.java` | Palette et typographie |
+| `CHANGELOG.md` | Historique |
 
 ## Contribution
 
-- Ne pas pousser directement sur `master` : créer une branche, puis ouvrir une Pull Request pour revue.
-- Éviter de modifier la partie de l'autre sans concertation.
-- Les fichiers `.class` et les répertoires de build sont ignorés via `.gitignore`.
-
-Dépôt : <https://github.com/nyx-deb/mots-croises>
+Créer une branche, puis ouvrir une Pull Request pour revue avant fusion. Les fichiers `.class` et les dossiers de compilation sont ignorés par `.gitignore`.
