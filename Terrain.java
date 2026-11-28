@@ -1,137 +1,125 @@
-import  java.util.Random;
+import java.util.Random;
 
 public class Terrain {
 
-   
-    
-     char[][] solution =new char [5][5];
-    
+    public static final int TAILLE = 10;
 
-     public Terrain(){
-          for (int ligne=0;ligne<5;ligne++){
-               for(int colonne=0;colonne<5;colonne++){
-                   solution[ligne][colonne]=' ';
-               }
-               
-          }
-     }
-     public void afficher(){
-          for(int ligne= 0;ligne<5;ligne++){
-               for(int colonne=0;colonne<5;colonne++){
-                  System.out.print(solution[ligne][colonne]);  
-               }
-               System.out.println();
-          }
-     }
+    private final char[][] solution = new char[TAILLE][TAILLE];
 
-
-
-public void afficherRectangle(){
-    for (int ligne = 0; ligne < 5; ligne++) {
-        System.out.println("+---+---+---+---+---+");
-        for (int colonne = 0; colonne < 5; colonne++) {
-            System.out.print("| "+ solution[ligne][colonne]+" ");
-        }
-        System.out.println("|");
-    }
-    System.out.println("+---+---+---+---+---+");
-}
-public void placerMot(Mot m){
-    if(!peutPlacer(m)){
-        return ;
-    }
-
-     if (m.direction.equals("horizontal")) {
-          for(int k=0;k<m.mot.length();k++){
-               int l=m.pos_depart.ligne;
-               int c=m.pos_depart.colonne+k;
-               solution[l][c]=m.mot.charAt(k);
-          }
-          
-     }
-     else if (m.direction.equals("vertical")) {
-          for(int k=0;k<m.mot.length();k++){
-               int l=m.pos_depart.ligne+k;
-               int c=m.pos_depart.colonne;
-               solution[l][c]=m.mot.charAt(k);
-          }
-          
-     }//oblique montante
-     else if (m.direction.equals("oblique")) {
-          for(int k=0;k<m.mot.length();k++){
-               int l=m.pos_depart.ligne-k;
-               int c=m.pos_depart.colonne+k;
-               solution[l][c]=m.mot.charAt(k);
-          }
-          
-     }
-}
-//controle 
-public boolean peutPlacer(Mot m) {
-    for (int k = 0; k < m.mot.length(); k++) {
-        int l = 0;
-        int c = 0;
-
-        if (m.direction.equals("horizontal")) {
-            l = m.pos_depart.ligne;
-            c = m.pos_depart.colonne + k;
-        } else if (m.direction.equals("vertical")) {
-            l = m.pos_depart.ligne + k;
-            c = m.pos_depart.colonne;
-        } else if (m.direction.equals("oblique")) {
-            l = m.pos_depart.ligne - k;
-            c = m.pos_depart.colonne + k;
-        } else {
-            return false;
-        }
-
-        // 1. Contrôle des limites de la grille (0 à 4)
-        if (l < 0 || l >= 5 || c < 0 || c >= 5) {
-            return false;
-        }
-
-        // 2. Contrôle des intersections (case vide ou même lettre)
-        char caseActuelle = solution[l][c];
-        char lettreMot = m.mot.charAt(k);
-        if (caseActuelle != ' ' && caseActuelle != lettreMot) {
-            return false;
+    public Terrain() {
+        for (int ligne = 0; ligne < TAILLE; ligne++) {
+            for (int colonne = 0; colonne < TAILLE; colonne++) {
+                solution[ligne][colonne] = ' ';
+            }
         }
     }
 
-    return true;
-}
+    public char getLettre(int ligne, int colonne) {
+        return solution[ligne][colonne];
+    }
 
-public boolean placerSiPossible(Mot m) {
-    if (peutPlacer(m)) {
-        placerMot(m);
+    public void afficher() {
+        for (int ligne = 0; ligne < TAILLE; ligne++) {
+            for (int colonne = 0; colonne < TAILLE; colonne++) {
+                System.out.print(solution[ligne][colonne]);
+            }
+            System.out.println();
+        }
+    }
+
+    public void afficherRectangle() {
+        StringBuilder separateur = new StringBuilder("+");
+        for (int colonne = 0; colonne < TAILLE; colonne++) {
+            separateur.append("---+");
+        }
+        System.out.println(separateur);
+        for (int ligne = 0; ligne < TAILLE; ligne++) {
+            System.out.print("|");
+            for (int colonne = 0; colonne < TAILLE; colonne++) {
+                System.out.print(" " + solution[ligne][colonne] + " |");
+            }
+            System.out.println();
+            System.out.println(separateur);
+        }
+    }
+
+    public void placerMot(Mot mot) {
+        if (!peutPlacer(mot)) {
+            return;
+        }
+        for (int k = 0; k < mot.mot.length(); k++) {
+            Position position = positionLettre(mot, k);
+            solution[position.getLigne()][position.getColonne()] = mot.mot.charAt(k);
+        }
+    }
+
+    public boolean peutPlacer(Mot mot) {
+        for (int k = 0; k < mot.mot.length(); k++) {
+            Position position = positionLettre(mot, k);
+            if (position == null) {
+                return false;
+            }
+            int ligne = position.getLigne();
+            int colonne = position.getColonne();
+            if (ligne < 0 || ligne >= TAILLE || colonne < 0 || colonne >= TAILLE) {
+                return false;
+            }
+            char lettre = mot.mot.charAt(k);
+            if (solution[ligne][colonne] != ' ' && solution[ligne][colonne] != lettre) {
+                return false;
+            }
+        }
         return true;
-    } else {
-        System.out.println("Impossible de placer le mot : " + m.mot);
+    }
+
+    public boolean placerSiPossible(Mot mot) {
+        if (peutPlacer(mot)) {
+            placerMot(mot);
+            return true;
+        }
         return false;
     }
-}
-public void remplirAvecDictionnaire(Mot[] dictionnaire) {
+
+    public void remplirAvecDictionnaire(Mot[] dictionnaire) {
         if (dictionnaire == null) {
             return;
         }
-        for (Mot m : dictionnaire) {
-            if (m != null) {
-                placerSiPossible(m);
+        for (Mot mot : dictionnaire) {
+            if (mot != null) {
+                placerSiPossible(mot);
             }
         }
     }
 
     public void remplirCasesVides() {
         Random random = new Random();
-        for (int ligne = 0; ligne < 5; ligne++) {
-            for (int colonne = 0; colonne < 5; colonne++) {
+        for (int ligne = 0; ligne < TAILLE; ligne++) {
+            for (int colonne = 0; colonne < TAILLE; colonne++) {
                 if (solution[ligne][colonne] == ' ') {
                     solution[ligne][colonne] = (char) ('A' + random.nextInt(26));
                 }
             }
         }
     }
-    
+
+    private Position positionLettre(Mot mot, int index) {
+        int ligne = mot.pos_depart.getLigne();
+        int colonne = mot.pos_depart.getColonne();
+        switch (mot.direction) {
+            case "horizontal" -> colonne += index;
+            case "vertical" -> ligne += index;
+            case "oblique" -> {
+                ligne -= index;
+                colonne += index;
+            }
+            case "oblique descendante" -> {
+                ligne += index;
+                colonne += index;
+            }
+            default -> {
+                return null;
+            }
+        }
+        return new Position(ligne, colonne);
+    }
 }
-
-

@@ -10,7 +10,7 @@ M   M  OOO    T   SSSS        M   M EEEEE LLLLL EEEEE SSSS
 ![Interface](https://img.shields.io/badge/UI-Swing-303033?style=flat-square)
 ![Dépendances](https://img.shields.io/badge/dependencies-none-303033?style=flat-square)
 
-Jeu de mots mêlés en Java Swing. Une grille 5x5 remplie de lettres, cinq définitions, et des mots à retrouver en glissant d'une lettre à l'autre.
+Jeu de mots mêlés en Java Swing. Une grille 10x10 remplie de lettres, dix mots à repérer, et un score en direct.
 
 ## Sommaire
 
@@ -40,26 +40,26 @@ Ouvrir le dossier dans un IDE Java, puis lancer la classe `Main` qui contient le
 
 Glissez sur la grille du premier au dernier lettre d'un mot. Les mots se lisent en horizontal, en vertical ou en oblique, dans les deux sens. Les lettres qui ne composent pas un mot sont là pour égarer.
 
-Un mot trouvé rapporte 10 points, une ligne sans mot en coûte 2, et un indice en coûte 5 en révélant la case de départ du mot sélectionné.
+La liste de droite donne les mots à trouver. Un mot repéré passe en rouge dans la grille et dans la liste. Un mot trouvé rapporte 10 points, une ligne sans mot en coûte 2, et un indice en coûte 5 en révélant la case de départ du mot sélectionné.
 
 <details>
 <summary>Commandes et interface</summary>
 
 | Action | Méthode |
 | --- | --- |
-| Choisir une définition | Clic dans la liste de droite |
+| Choisir un mot dans la liste | Clic dans la colonne de droite |
 | Sélectionner un mot | Glisser d'une lettre à l'autre |
 | Indice | Bouton « Indice », -5 points |
 | Recommencer | Bouton « Nouvelle partie » |
 
-L'interface est sombre, avec un seul accent rouge : sélection, lettres trouvées et score. Les mots validés passent dans la même teinte dans la grille et dans la liste.
+L'interface est sombre, avec un seul accent rouge : sélection, mots trouvés, score et fenêtres de message. Le retour d'information s'affiche en bas de fenêtre pour ne pas interrompre le jeu.
 
 </details>
 
 <details>
 <summary>À propos du modèle</summary>
 
-`Position`, `Mot` et `Terrain` construisent la grille et placent les mots. `Jeu` recherche les mots sélectionnés, tient le score et la progression. Les classes Swing se limitent à l'affichage et aux événements.
+`Position`, `Mot` et `Terrain` construisent la grille et placent les mots dans quatre directions. `Jeu` recherche les mots sélectionnés, tient le score et la progression. Les classes Swing se limitent à l'affichage et aux événements.
 
 </details>
 
@@ -68,14 +68,15 @@ L'interface est sombre, avec un seul accent rouge : sélection, lettres trouvée
 | Fichier | Rôle |
 | --- | --- |
 | `Main.java` | Point d'entrée |
-| `Jeu.java` | Recherche, validation, score, progression |
-| `Terrain.java` | Grille et placement des mots |
-| `Mot.java` | Mot, définition, direction, départ |
+| `Jeu.java` | Placement, recherche, score, progression |
+| `Terrain.java` | Grille 10x10 et contrôle des positions |
+| `Mot.java` | Mot, direction, départ |
 | `Position.java` | Coordonnées |
 | `FenetrePrincipale.java` | Fenêtre et disposition |
 | `PanneauGrille.java` | Grille et sélection au glisser |
-| `PanneauDefinitions.java` | Liste des définitions |
+| `PanneauMots.java` | Liste des mots à trouver |
 | `PanneauScore.java` | Score et progression |
+| `Messages.java` | Fenêtres de message sombres |
 | `Apparence.java` | Palette et typographie |
 | `CHANGELOG.md` | Historique |
 

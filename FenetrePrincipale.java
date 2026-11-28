@@ -5,7 +5,6 @@ import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.UIManager;
 
@@ -13,10 +12,13 @@ public final class FenetrePrincipale extends JFrame {
 
     private static final long serialVersionUID = 1L;
 
+    private static final String ASTUCE = "Glissez d'une lettre à l'autre pour sélectionner un mot.";
+
     private final transient Jeu jeu;
     private final PanneauGrille grille;
-    private final PanneauDefinitions definitions;
+    private final PanneauMots mots;
     private final PanneauScore tableauScore;
+    private final JLabel statut;
 
     public FenetrePrincipale(Jeu jeu) {
         super("Mots mêlés");
@@ -25,8 +27,9 @@ public final class FenetrePrincipale extends JFrame {
         configurerCouleurs();
 
         grille = new PanneauGrille(jeu);
-        definitions = new PanneauDefinitions(jeu);
+        mots = new PanneauMots(jeu);
         tableauScore = new PanneauScore(jeu);
+        statut = new JLabel(ASTUCE);
         grille.setActionValidation(this::verifierSelection);
 
         JLabel titre = new JLabel("MOTS MÊLÉS");
@@ -40,20 +43,19 @@ public final class FenetrePrincipale extends JFrame {
 
         JPanel colonneDroite = new JPanel(new BorderLayout(0, 12));
         colonneDroite.setBackground(Apparence.FOND);
-        JLabel titreDefinitions = new JLabel("DÉFINITIONS");
-        titreDefinitions.setFont(Apparence.PETIT);
-        titreDefinitions.setForeground(Apparence.ATTENUE);
-        colonneDroite.add(titreDefinitions, BorderLayout.NORTH);
-        colonneDroite.add(definitions, BorderLayout.CENTER);
+        JLabel titreMots = new JLabel("MOTS À TROUVER");
+        titreMots.setFont(Apparence.PETIT);
+        titreMots.setForeground(Apparence.ATTENUE);
+        colonneDroite.add(titreMots, BorderLayout.NORTH);
+        colonneDroite.add(mots, BorderLayout.CENTER);
 
-        JPanel contenu = new JPanel(new BorderLayout(32, 0));
+        JPanel contenu = new JPanel(new BorderLayout(28, 0));
         contenu.setBackground(Apparence.FOND);
         contenu.add(grille, BorderLayout.WEST);
         contenu.add(colonneDroite, BorderLayout.CENTER);
 
-        JLabel aide = new JLabel("Glissez d'une lettre à l'autre pour sélectionner un mot.");
-        aide.setFont(Apparence.PETIT);
-        aide.setForeground(Apparence.ATTENUE);
+        statut.setFont(Apparence.PETIT);
+        statut.setForeground(Apparence.ATTENUE);
 
         JPanel actions = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
         actions.setBackground(Apparence.FOND);
@@ -66,28 +68,24 @@ public final class FenetrePrincipale extends JFrame {
 
         JPanel pied = new JPanel(new BorderLayout());
         pied.setBackground(Apparence.FOND);
-        pied.add(aide, BorderLayout.WEST);
+        pied.add(statut, BorderLayout.WEST);
         pied.add(actions, BorderLayout.EAST);
 
         JPanel racine = new JPanel(new BorderLayout(0, 20));
         racine.setBackground(Apparence.FOND);
-        racine.setBorder(BorderFactory.createEmptyBorder(28, 32, 24, 32));
+        racine.setBorder(BorderFactory.createEmptyBorder(26, 28, 22, 28));
         racine.add(entete, BorderLayout.NORTH);
         racine.add(contenu, BorderLayout.CENTER);
         racine.add(pied, BorderLayout.SOUTH);
         setContentPane(racine);
 
-        definitions.selectionnerMot(jeu.prochainMotATrouver());
+        mots.selectionnerMot(jeu.prochainMotATrouver());
         pack();
         setLocationRelativeTo(null);
     }
 
     private void configurerCouleurs() {
         UIManager.put("Panel.background", Apparence.FOND);
-        UIManager.put("OptionPane.background", Apparence.SURFACE);
-        UIManager.put("OptionPane.messageForeground", Apparence.TEXTE);
-        UIManager.put("Button.background", Apparence.SURFACE);
-        UIManager.put("Button.foreground", Apparence.TEXTE);
         UIManager.put("List.background", Apparence.SURFACE);
         UIManager.put("List.foreground", Apparence.TEXTE);
         UIManager.put("Viewport.background", Apparence.SURFACE);
@@ -100,64 +98,66 @@ public final class FenetrePrincipale extends JFrame {
         Mot trouve = jeu.chercherMot(debut, fin);
         if (trouve != null && jeu.validerMot(trouve)) {
             actualiserAffichage();
-            definitions.selectionnerMot(jeu.prochainMotATrouver());
-            JOptionPane.showMessageDialog(this, "Trouvé : " + trouve.mot + "\n" + trouve.definition,
-                "Mot trouvé", JOptionPane.INFORMATION_MESSAGE);
+            mots.selectionnerMot(jeu.prochainMotATrouver());
+            statut.setText("Trouvé : " + trouve.mot + " · +" + Jeu.POINTS_PAR_MOT + " pts");
+            statut.setForeground(Apparence.ACCENT);
             verifierFinDePartie();
             return;
         }
         if (trouve != null) {
-            JOptionPane.showMessageDialog(this, "Ce mot est déjà trouvé.",
-                "Mot trouvé", JOptionPane.INFORMATION_MESSAGE);
+            statut.setText("Ce mot est déjà trouvé.");
+            statut.setForeground(Apparence.ATTENUE);
             return;
         }
         jeu.appliquerMalus();
         actualiserAffichage();
-        JOptionPane.showMessageDialog(this, "Aucun mot sur cette ligne. -" + Jeu.PENALITE_ERREUR + " pts",
-            "Essayez encore", JOptionPane.WARNING_MESSAGE);
+        statut.setText("Aucun mot sur cette ligne · -" + Jeu.PENALITE_ERREUR + " pts");
+        statut.setForeground(Apparence.ATTENUE);
     }
 
     private void utiliserIndice() {
-        Mot mot = definitions.getMotSelectionne();
+        Mot mot = mots.getMotSelectionne();
         if (mot == null) {
             mot = jeu.prochainMotATrouver();
         }
         Position position = jeu.donnerIndice(mot);
         actualiserAffichage();
         if (position == null) {
-            JOptionPane.showMessageDialog(this, "Tous les mots sont trouvés.",
-                "Indice", JOptionPane.INFORMATION_MESSAGE);
+            Messages.information(this, "Indice", "Tous les mots sont déjà trouvés.");
             return;
         }
         grille.afficherIndice(position);
-        JOptionPane.showMessageDialog(this, "Départ : ligne " + (position.getLigne() + 1)
-            + ", colonne " + (position.getColonne() + 1) + ". -" + Jeu.POINTS_INDICE + " pts",
-            "Indice", JOptionPane.INFORMATION_MESSAGE);
+        String texte = "Le mot commence à la ligne " + (position.getLigne() + 1)
+            + ", colonne " + (position.getColonne() + 1) + ". -" + Jeu.POINTS_INDICE + " pts";
+        statut.setText(texte);
+        statut.setForeground(Apparence.ACCENT);
+        Messages.information(this, "Indice", texte);
     }
 
     private void nouvellePartie() {
         jeu.reinitialiser();
         grille.reinitialiser();
-        definitions.reinitialiser();
-        definitions.selectionnerMot(jeu.prochainMotATrouver());
+        mots.reinitialiser();
+        mots.selectionnerMot(jeu.prochainMotATrouver());
         actualiserAffichage();
+        statut.setText(ASTUCE);
+        statut.setForeground(Apparence.ATTENUE);
     }
 
     private void verifierFinDePartie() {
         if (!jeu.estTermine()) {
             return;
         }
-        int choix = JOptionPane.showConfirmDialog(this,
-            "Terminé. Score : " + jeu.getScore() + " pts.\nRejouer ?",
-            "Fin de partie", JOptionPane.YES_NO_OPTION, JOptionPane.INFORMATION_MESSAGE);
-        if (choix == JOptionPane.YES_OPTION) {
+        boolean rejouer = Messages.confirmer(this, "Fin de partie",
+            "Tous les mots sont trouvés.\nScore : " + jeu.getScore() + " pts.", "Rejouer");
+        if (rejouer) {
             nouvellePartie();
         }
     }
 
     private void actualiserAffichage() {
         grille.repaint();
-        definitions.actualiser();
+        mots.actualiser();
         tableauScore.actualiser();
     }
 }

@@ -1,15 +1,25 @@
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Random;
 import java.util.Set;
 
 public class Jeu {
 
-    public static final int TAILLE = 5;
+    public static final int TAILLE = Terrain.TAILLE;
     public static final int POINTS_PAR_MOT = 10;
     public static final int POINTS_INDICE = 5;
     public static final int PENALITE_ERREUR = 2;
+
+    private static final String[] DIRECTIONS = {
+        "horizontal", "vertical", "oblique", "oblique descendante"
+    };
+    private static final String[] WORDS = {
+        "JEU", "DANSE", "SOLEIL", "LIVRE", "TABLE",
+        "CHAT", "FLEUR", "MUSIQUE", "JARDIN", "EAU"
+    };
 
     private Terrain terrain;
     private final List<Mot> mots = new ArrayList<>();
@@ -28,19 +38,23 @@ public class Jeu {
         score = 0;
         indicesUtilises = 0;
 
-        Mot[] candidats = {
-            new Mot("JEU", "horizontal", new Position(0, 1), "Activité ludique"),
-            new Mot("US", "vertical", new Position(0, 3), "Abréviation courante"),
-            new Mot("SOL", "oblique", new Position(3, 0), "Surface terrestre"),
-            new Mot("DANSE", "horizontal", new Position(4, 0), "Suite de mouvements rythmés"),
-            new Mot("PA", "vertical", new Position(0, 0), "Début de mot")
-        };
-        for (Mot candidat : candidats) {
-            if (terrain.peutPlacer(candidat)) {
-                terrain.placerMot(candidat);
-                mots.add(candidat);
+        Random random = new Random();
+        for (String texte : WORDS) {
+            Mot place = null;
+            for (int tentative = 0; tentative < 2000 && place == null; tentative++) {
+                String direction = DIRECTIONS[random.nextInt(DIRECTIONS.length)];
+                Position depart = positionAleatoire(texte, direction, random);
+                Mot candidat = new Mot(texte, direction, depart);
+                if (terrain.peutPlacer(candidat)) {
+                    terrain.placerMot(candidat);
+                    place = candidat;
+                }
+            }
+            if (place != null) {
+                mots.add(place);
             }
         }
+        mots.sort(Comparator.comparing(mot -> mot.mot));
         terrain.remplirCasesVides();
     }
 
@@ -80,19 +94,26 @@ public class Jeu {
     }
 
     public char getLettre(int ligne, int colonne) {
-        return terrain.solution[ligne][colonne];
+        return terrain.getLettre(ligne, colonne);
     }
 
     public Position positionLettre(Mot mot, int index) {
         int ligne = mot.pos_depart.getLigne();
         int colonne = mot.pos_depart.getColonne();
-        if ("horizontal".equals(mot.direction)) {
-            colonne += index;
-        } else if ("vertical".equals(mot.direction)) {
-            ligne += index;
-        } else if ("oblique".equals(mot.direction)) {
-            ligne -= index;
-            colonne += index;
+        switch (mot.direction) {
+            case "horizontal" -> colonne += index;
+            case "vertical" -> ligne += index;
+            case "oblique" -> {
+                ligne -= index;
+                colonne += index;
+            }
+            case "oblique descendante" -> {
+                ligne += index;
+                colonne += index;
+            }
+            default -> {
+                return new Position(ligne, colonne);
+            }
         }
         return new Position(ligne, colonne);
     }
@@ -209,6 +230,35 @@ public class Jeu {
         indicesUtilises++;
         score = Math.max(0, score - POINTS_INDICE);
         return positionLettre(mot, 0);
+    }
+
+    private Position positionAleatoire(String texte, String direction, Random random) {
+        int longueur = texte.length();
+        int ligne;
+        int colonne;
+        switch (direction) {
+            case "horizontal" -> {
+                ligne = random.nextInt(TAILLE);
+                colonne = random.nextInt(TAILLE - longueur + 1);
+            }
+            case "vertical" -> {
+                ligne = random.nextInt(TAILLE - longueur + 1);
+                colonne = random.nextInt(TAILLE);
+            }
+            case "oblique" -> {
+                ligne = longueur - 1 + random.nextInt(TAILLE - longueur + 1);
+                colonne = random.nextInt(TAILLE - longueur + 1);
+            }
+            case "oblique descendante" -> {
+                ligne = random.nextInt(TAILLE - longueur + 1);
+                colonne = random.nextInt(TAILLE - longueur + 1);
+            }
+            default -> {
+                ligne = 0;
+                colonne = 0;
+            }
+        }
+        return new Position(ligne, colonne);
     }
 
     private boolean memePosition(Position premiere, Position seconde) {
