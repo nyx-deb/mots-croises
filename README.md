@@ -1,15 +1,15 @@
-# Mots croisés
+# Mots mêlés
 
-Jeu de mots croisés en Java Swing : une grille 5x5, des définitions à consulter, des réponses à saisir et un score calculé en temps réel.
+Jeu de mots mêlés en Java Swing : une grille 5x5 remplie de lettres, des définitions à consulter et des mots à retrouver en glissant d'une lettre à l'autre.
 
 ## Présentation
 
-Le projet est divisé en deux parties :
+Le projet garde la séparation en deux parties définie dans le document de répartition :
 
-- **Grille et modèle** : `Position.java`, `Mot.java`, `Terrain.java`. Ils gèrent les coordonnées, les mots, le placement dans la grille et le contrôle des croisements.
-- **Jeu et interface** : `Jeu.java`, `Main.java`, `FenetrePrincipale.java`, `PanneauGrille.java`, `PanneauDefinitions.java`, `PanneauScore.java`. Ils gèrent la partie, les réponses, les indices, le score et l'affichage Swing.
+- **Grille et modèle** : `Position.java`, `Mot.java`, `Terrain.java`. Ils gèrent les coordonnées, les mots, leur placement et le contrôle des croisements.
+- **Jeu et interface** : `Jeu.java`, `Main.java`, `FenetrePrincipale.java`, `PanneauGrille.java`, `PanneauDefinitions.java`, `PanneauScore.java`, `Apparence.java`. Ils gèrent la partie, la recherche des mots, les indices, le score et l'affichage Swing.
 
-La logique métier reste dans le modèle ; les classes Swing ne font que afficher et transmettre les actions de l'utilisateur.
+La logique métier reste dans le modèle ; les classes Swing ne font qu'afficher la grille et transmettre les actions du joueur.
 
 ## Prérequis
 
@@ -30,46 +30,48 @@ Vous pouvez aussi ouvrir le projet dans un IDE Java et lancer la classe `Main`, 
 
 ## Règles du jeu
 
-- La grille contient des mots à trouver dans trois directions : horizontale, verticale et oblique montante.
-- Les cases non occupées par un mot du dictionnaire reçoivent une lettre aléatoire, ce qui complète la grille.
-- Sélectionnez une définition dans la liste (ou cliquez sur une case de la grille) pour choisir un mot à remplir. Sur un croisement, cliquez plusieurs fois sur la même case pour passer d'un mot à l'autre.
-- Saisissez une lettre par case. La sélection avance automatiquement le long du mot choisi.
-- « Vérifier le mot » valide uniquement le mot sélectionné, tandis que « Vérifier la grille » valide tous les mots déjà complets.
-- Un indice révèle une lettre manquante du mot sélectionné.
-- Une réponse correcte rapporte 10 points, un indice coûte 5 points et une mauvaise réponse coûte 2 points. Le score ne peut pas devenir négatif.
+- La grille affiche toutes les lettres : celles des mots cachés et des lettres aléatoires qui servent à égarer le joueur.
+- Cinq mots sont dissimulés dans la grille, en horizontal, en vertical ou en oblique montant.
+- Pour valider un mot, glissez le curseur depuis sa première lettre jusqu'à sa dernière lettre. Les mots sont acceptés dans les deux sens de lecture.
+- Les définitions sont listées à droite. Un mot trouvé passe au vert dans la liste et dans la grille, et la sélection passe automatiquement au mot suivant non trouvé.
+- Un mot correct rapporte **10 points**. Une sélection qui ne correspond à aucun mot coûte **2 points**. Le score ne peut pas devenir négatif.
+- Le bouton **Indice (-5)** révèle, avec un contour doré, la case de départ du mot sélectionné.
 - La partie se termine lorsque tous les mots ont été trouvés ; une fenêtre propose alors de rejouer.
 
 ## Commandes utiles
 
 | Action | Méthode |
 | --- | --- |
-| Choisir un mot | Clic sur une définition ou sur une case de la grille |
-| Changer de mot sur un croisement | Clics répétés sur la même case |
-| Saisir une lettre | Touche lettre au clavier |
-| Effacer une case | Retour arrière |
-| Vérifier le mot sélectionné | Touche Entrée ou bouton « Vérifier le mot » |
+| Choisir la définition ciblée | Clic sur une définition |
+| Sélectionner un mot | Glisser d'une lettre à l'autre dans la grille |
 | Obtenir un indice | Bouton « Indice (-5) » |
+| Consulter les règles | Bouton « Règles » |
 | Recommencer | Bouton « Nouvelle partie » |
+
+## Interface
+
+L'interface utilise un thème sombre : fond ardoise, surfaces légèrement plus claires, accent doré et vert pour les mots trouvés. La typographie `DejaVu Sans` (et `DejaVu Sans Mono` pour les lettres de la grille) garde une hiérarchie lisible, avec des contrastes conformes à WCAG AA. Chaque état est visible : survol des cases, sélection en cours, mot trouvé, indice en pointillés et boutons au survol.
 
 ## Structure des fichiers
 
 | Fichier | Rôle |
 | --- | --- |
 | `Main.java` | Point d'entrée, lance la fenêtre Swing. |
-| `Jeu.java` | État de la partie, saisie, vérification, indices, score et progression. |
+| `Jeu.java` | État de la partie, recherche des mots, validation, indices, score, progression et fin de partie. |
 | `Terrain.java` | Grille 5x5, placement des mots et contrôle des limites et croisements. |
 | `Mot.java` | Mot, définition, direction et position de départ. |
 | `Position.java` | Coordonnées ligne/colonne et accesseurs. |
 | `FenetrePrincipale.java` | Fenêtre principale, disposition et boutons d'action. |
-| `PanneauGrille.java` | Grille interactive et sélection des cases. |
+| `PanneauGrille.java` | Grille interactive, peinture des cases et sélection par glisser-déposer. |
 | `PanneauDefinitions.java` | Liste des définitions et détails du mot choisi. |
 | `PanneauScore.java` | Score, progression et nombre d'indices. |
+| `Apparence.java` | Palette, typographie et boutons communs à l'interface. |
 | `CHANGELOG.md` | Historique des changements. |
 
 ## Contribution
 
 - Ne pas pousser directement sur `master` : créer une branche, puis ouvrir une Pull Request pour revue.
-- Les fichiers du modèle (`Position.java`, `Mot.java`, `Terrain.java`) et ceux du jeu/interface sont attribués à deux personnes ; éviter de modifier la partie de l'autre sans concertation.
+- Éviter de modifier la partie de l'autre sans concertation.
 - Les fichiers `.class` et les répertoires de build sont ignorés via `.gitignore`.
 
 Dépôt : <https://github.com/nyx-deb/mots-croises>
