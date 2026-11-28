@@ -19,7 +19,7 @@ public final class Apparence {
     public static final Font TITRE = new Font("DejaVu Sans", Font.BOLD, 20);
     public static final Font CORPS = new Font("DejaVu Sans", Font.PLAIN, 14);
     public static final Font PETIT = new Font("DejaVu Sans", Font.PLAIN, 12);
-    public static final Font LETTRE = new Font("DejaVu Sans Mono", Font.BOLD, 26);
+    public static final Font LETTRE = new Font("DejaVu Sans Mono", Font.BOLD, 20);
     public static final Font CHIFFRE = new Font("DejaVu Sans", Font.BOLD, 22);
 
     private Apparence() {

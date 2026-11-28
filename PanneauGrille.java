@@ -19,11 +19,11 @@ public final class PanneauGrille extends JPanel {
 
     private static final long serialVersionUID = 1L;
 
-    public static final int TAILLE_CASE = 58;
-    public static final int ESPACEMENT = 6;
+    public static final int TAILLE_CASE = 40;
+    public static final int ESPACEMENT = 4;
     public static final int MARGE = 8;
 
-    private static final int RAYON = 6;
+    private static final int RAYON = 4;
     private static final Color SURVOL = new Color(35, 35, 38);
 
     private final transient Jeu jeu;
